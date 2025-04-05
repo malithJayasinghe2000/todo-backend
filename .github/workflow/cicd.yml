@@ -1,0 +1,42 @@
+name: Deploy Node Application
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Source
+        uses: actions/checkout@v4
+
+      - name: Login to Docker hub
+        run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build Docker Image
+        run: docker build -t ${{ secrets.DOCKER_USERNAME }}/nodejs-app .
+
+      - name: Publish Image to docker hub 
+        run: docker push ${{ secrets.DOCKER_USERNAME }}/nodejs-app:latest 
+        
+  deploy:
+    needs: build
+    runs-on: self-hosted
+    steps:
+      - name: Pull Docker Image
+        run: docker pull ${{ secrets.DOCKER_USERNAME }}/nodejs-app:latest
+      - name: Run Docker Container
+        run: |
+          docker run -d -p 4000:4000 \
+            --name nodejs-app-container \
+            -e MONGODB_URI="${{ secrets.MONGODB_URI }}" \
+            -e PORT=4000 \
+            -e JWT_SECRET="${{ secrets.JWT_SECRET }}" \
+            -e NODE_ENV=development \
+            -e SMTP_USER="${{ secrets.SMTP_USER }}" \
+            -e SMTP_PASS="${{ secrets.SMTP_PASS }}" \
+            -e SENDER_EMAIL="${{ secrets.SENDER_EMAIL }}" \
+            ${{ secrets.DOCKER_USERNAME }}/nodejs-app:latest
+
