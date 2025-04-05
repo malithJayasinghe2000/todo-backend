@@ -11,7 +11,7 @@ const app = express();
 const port = process.env.PORT || 8001;
 connectDB();
 
-const allowedOrigins = ['http://localhost:5173'];
+const allowedOrigins = ['http://13.60.34.253:3000'];
 
 app.use(express.json());
 app.use(cookieParser());
