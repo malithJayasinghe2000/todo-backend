@@ -10,7 +10,7 @@ export const register = async (req, res) => {
     if (!name || !email || !password) {
         return res.json({ success: false, message: "All fields are required" });
     }
-
+// comm
     try {
 
         const existingUser = await userModel.findOne({ email });
